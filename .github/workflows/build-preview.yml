@@ -21,11 +21,21 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: yarn
-      - run: vsce package  -o ./ --yarn
-
+      - run: yarn package
+      - name: Get current time
+        uses: 1466587594/get-current-time@v2
+        id: current-time
+        with:
+          format: "YYYYMMDDhhmmss"
+          utcOffset: "+08:00"
       - uses: "marvinpinto/action-automatic-releases@latest"
+        env:
+          F_TIME: "${{ steps.current-time.outputs.formattedTime }}"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: true
+          prerelease: false
+          draft: true
+          automatic_release_tag: "latest"
+          title: "Build ${{ steps.current-time.outputs.formattedTime }}"
           files: |
             *.vsix
