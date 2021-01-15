@@ -16,21 +16,22 @@ jobs:
         node-version: [12.x]
     steps:
       - uses: actions/checkout@v2
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-      - run: yarn
-      - run: yarn package
       - name: Get current time
         uses: 1466587594/get-current-time@v2
         id: current-time
         with:
           format: "YYYYMMDDhhmmss"
           utcOffset: "+08:00"
+      - name: Change package.json version
+        run: |
+          sed -i -E 's/"version": "(.*)?"/"version": "\1-beta${{ steps.current-time.outputs.formattedTime }}"/g' package.json
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: yarn
+      - run: yarn package
       - uses: "marvinpinto/action-automatic-releases@latest"
-        env:
-          F_TIME: "${{ steps.current-time.outputs.formattedTime }}"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
